@@ -1,6 +1,7 @@
 import os
 from langchain_google_genai import GoogleGenerativeAI
-from langchain.chains import LLMChain
+# from langchain.chains import LLMChain
+from langchain.schema.runnable import RunnableSequence
 from langchain.prompts import PromptTemplate
 from typing import List
 
@@ -53,10 +54,12 @@ def generate_query(selected_options: List[int], text: str) -> str:
     prompt = PromptTemplate.from_template(prompt_text)
 
     # Create Chain
-    chain = LLMChain(llm=llm, prompt=prompt)
+    # chain = LLMChain(llm=llm, prompt=prompt)
+    chain = RunnableSequence(prompt | llm)
 
     # Run Query
-    response = chain.run(text)
+    # response = chain.run(text)
+    response = chain.invoke(text)
     return response
 
 # if __name__ == "__main__":
