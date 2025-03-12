@@ -1,10 +1,13 @@
-from fastapi import FastAPI,  HTTPException,  BackgroundTasks
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI,  HTTPException,  UploadFile, File, BackgroundTasks
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
-
-from correction_words_service import generate_query
+import os
+import tempfile
+import os
+import tempfile
+from file_processing import save_temp_file, process_and_save, read_file_content
 
 
 # Initialize FastAPI app
@@ -45,5 +48,40 @@ def query_database_endpoint(request: PromptRequest):
     output = generate_query(request.selected_options, request.text)
     return {"output": output}
 
+# Read file content
+@app.post("/read-file/")
+async def process_file( file: UploadFile = File(...)):
+    """Uploads a file and read file content."""
+    try:
+        temp_file_path = save_temp_file(file)
+    except HTTPException as e:
+        return JSONResponse(status_code=e.status_code, content={"message": e.detail})
+
+    # background_tasks.add_task(process_and_save, temp_file_path, selected_options)
+    
+    return {"content": read_file_content(temp_file_path)}
+
+# Process file upload
+@app.post("/process-file/")
+async def process_file(background_tasks: BackgroundTasks, file: UploadFile = File(...), selected_options: List[int] = [0]):
+    """Uploads a file, processes it in the background, and saves a corrected version."""
+    try:
+        temp_file_path = save_temp_file(file)
+    except HTTPException as e:
+        return JSONResponse(status_code=e.status_code, content={"message": e.detail})
+
+    # background_tasks.add_task(process_and_save, temp_file_path, selected_options)
+    
+    return {"message": process_and_save(temp_file_path, selected_options)}
+
+# Download corrected file
+@app.get("/download-file/")
+async def download_file(filename: str):
+    """Provides download access to the corrected file."""
+    file_path = os.path.join(tempfile.gettempdir(), filename)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    return FileResponse(file_path, filename=filename)
 
 # To start FastAPI, use: uvicorn main:app --reload
