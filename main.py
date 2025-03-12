@@ -7,6 +7,7 @@ import os
 import tempfile
 import os
 import tempfile
+from correction_words_service import generate_query
 from file_processing import save_temp_file, process_and_save, read_file_content
 
 
