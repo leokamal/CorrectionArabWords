@@ -101,6 +101,8 @@ def generate_prompt(selected_options):
     
     # Add the input text and the required JSON output format
     prompt_text += "\n**النص المدخل:** {text}\n\n**الإخراج المطلوب (بصيغة JSON):**\n{{\n    \"corrected_text\": \"النص المصحح هنا\",\n    \"details\": [\"شرح التعديلات التي تم إجراؤها على النص.\"]\n}}"
+    prompt_text += "احترام الصيغة json إجباري."
+    
     
     return prompt_text
 
